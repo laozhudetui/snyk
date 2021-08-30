@@ -16,10 +16,11 @@ interface Config {
   PROJECT_NAME: string;
   TOKEN: string;
   CODE_CLIENT_PROXY_URL: string;
+  DISABLE_ANALYTICS: unknown;
 }
 
 // TODO: fix the types!
-const config = (snykConfig.loadConfig(
+export const config = (snykConfig.loadConfig(
   __dirname + '/../..',
 ) as unknown) as Config;
 
@@ -62,5 +63,3 @@ if (!config.ROOT) {
   const apiUrl = url.parse(config.API);
   config.ROOT = apiUrl.protocol + '//' + apiUrl.host;
 }
-
-export = config;

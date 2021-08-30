@@ -1,4 +1,4 @@
-const config = require('../config');
+import { config } from '../config';
 const chalk = require('chalk');
 const { SEVERITIES } = require('../snyk-test/common');
 const analytics = require('../analytics');
@@ -64,13 +64,13 @@ const codes = {
   INVALID_SEVERITY_THRESHOLD: errors.invalidSeverityThreshold,
 };
 
-module.exports = function error(command) {
+export default function error(command) {
   const e = new Error('Unknown command "' + command + '"');
   e.code = 'UNKNOWN_COMMAND';
   return Promise.reject(e);
-};
+}
 
-module.exports.message = function(error) {
+export function message(error) {
   let message = error; // defaults to a string (which is super unlikely)
   if (error instanceof Error) {
     if (error.code === 'VULNS') {
@@ -100,4 +100,4 @@ module.exports.message = function(error) {
   }
 
   return message;
-};
+}
