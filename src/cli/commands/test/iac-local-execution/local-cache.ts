@@ -9,6 +9,17 @@ import { CustomError } from '../../../../lib/errors';
 import * as analytics from '../../../../lib/analytics';
 import ReadableStream = NodeJS.ReadableStream;
 import { getErrorStringCode } from './error-utils';
+import { Readable } from "stream"
+const tar = require('tar-stream');
+const streamifier = require('streamifier');
+
+import * as config from '../../../../lib/config';
+import { api } from '../../../../lib/api-token';
+// import { isCI } from '../../../../lib/is-ci';
+import { makeRequest } from '../../../../lib/request';
+// import { Payload } from '../../../../lib/request/types';
+import { FailedToGetIacOrgSettingsError } from './org-settings/get-iac-org-settings';
+import * as zlib from 'zlib'
 
 const debug = Debug('iac-local-cache');
 
@@ -83,6 +94,34 @@ export function getLocalCachePath(engineType: EngineType) {
   }
 }
 
+function getIacOrgCustomRules(
+  publicOrgId?: string,
+): Promise<{fileContentResult: string}> {
+  const payload: any = {
+    method: 'get',
+    url: config.API + '/custom-rules',
+    json: true,
+    qs: { org: publicOrgId },
+    headers: {
+      // 'x-is-ci': isCI(),
+      authorization: `token ${api()}`,
+    },
+  };
+
+  return new Promise((resolve, reject) => {
+    makeRequest(payload, (error, res) => {
+      if (error) {
+        return reject(error);
+      }
+      if (res.statusCode < 200 || res.statusCode > 299) {
+        return reject(res);
+      }
+      resolve(res.body);
+    });
+  });
+}
+
+
 export async function initLocalCache({
   customRulesPath,
 }: { customRulesPath?: string } = {}): Promise<void> {
@@ -92,15 +131,58 @@ export async function initLocalCache({
     throw new FailedToInitLocalCacheError();
   }
 
-  // Attempt to extract the custom rules from the path provided.
-  if (customRulesPath) {
-    try {
-      const response = fs.createReadStream(customRulesPath);
-      await extractBundle(response);
-    } catch (e) {
-      throw new FailedToExtractCustomRulesError(customRulesPath);
-    }
+ 
+  try {
+    console.log('download bundle')
+    const response: any = await getIacOrgCustomRules()
+    console.log(response.fileContentResult.text)
+    // await extractBundle(Readable.from(response.fileContentResult.text))
+    // await extractBundle(Readable.from(response.fileContentResult.text))
+
+    // const untar = (buffer): Promise<Buffer[]> => new Promise((resolve, reject) => {
+
+    //   const textData: any[] = [];
+    //   const extract = tar.extract();
+    //   // Extract method accepts each tarred file as entry, separating header and stream of contents:
+    //   extract.on('entry', (header, stream, next) => {
+    //     const chunks: any[] = [];
+    //     stream.on('data', (chunk) => {
+    //       chunks.push(chunk);
+    //     });
+    //     stream.on('error', (err) => {
+    //       reject(err);
+    //     });
+    //     stream.on('end', () => {
+    //       // We concatenate chunks of the stream into string and push it to array, which holds contents of each file in .tar.gz:
+    //       const text = Buffer.concat(chunks).toString('utf8');
+    //       textData.push(text);
+    //       next();
+    //     });
+    //     stream.resume();
+    //   });
+    //   extract.on('finish', () => {
+    //     // We return array of tarred files's contents:
+    //     resolve(textData);
+    //   });
+    //   // We unzip buffer and convert it to Readable Stream and then pass to tar-stream's extract method:
+    //   streamifier.createReadStream(buffer).pipe(extract);
+
+    // })
+    // await extractBundle(Readable.from(await untar(response.fileContentResult.text)))
+    await extractBundle(Readable.from(response.fileContentResult.text).pipe(zlib.createGunzip()))
+  } catch (e) {
+    console.log(e)
+    throw new FailedToExtractCustomRulesError('blah');
   }
+  // // Attempt to extract the custom rules from the path provided.
+  // if (customRulesPath) {
+  //   try {
+  //     const response = fs.createReadStream(customRulesPath);
+  //     await extractBundle(response);
+  //   } catch (e) {
+  //     throw new FailedToExtractCustomRulesError(customRulesPath);
+  //   }
+  // }
 
   // We extract the Snyk rules after the custom rules to ensure our files
   // always overwrite whatever might be there.

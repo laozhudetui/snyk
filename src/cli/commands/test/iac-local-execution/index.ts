@@ -49,14 +49,14 @@ export async function test(
     );
 
     // Duplicate all the files and run them through the custom engine.
-    if (customRulesPath) {
+    // if (customRulesPath) {
       parsedFiles.push(
         ...parsedFiles.map((file) => ({
           ...file,
           engineType: EngineType.Custom,
         })),
       );
-    }
+    // }
 
     const scannedFiles = await scanFiles(parsedFiles);
     const resultsWithCustomSeverities = await applyCustomSeverities(
