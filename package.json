@@ -112,7 +112,7 @@
     "micromatch": "4.0.2",
     "needle": "2.6.0",
     "open": "^7.0.3",
-    "ora": "5.4.0",
+    "ora": "5.4.1",
     "os-name": "^3.0.0",
     "pegjs": "^0.10.0",
     "promise-queue": "^2.2.5",
