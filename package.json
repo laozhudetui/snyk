@@ -75,7 +75,7 @@
     "@open-policy-agent/opa-wasm": "^1.2.0",
     "@snyk/cli-interface": "2.11.0",
     "@snyk/cloud-config-parser": "^1.10.2",
-    "@snyk/code-client": "4.0.0",
+    "@snyk/code-client": "4.12.4",
     "@snyk/dep-graph": "^1.27.1",
     "@snyk/fix": "file:packages/snyk-fix",
     "@snyk/gemfile": "1.2.0",
@@ -137,7 +137,7 @@
     "snyk-try-require": "^2.0.2",
     "strip-ansi": "^5.2.0",
     "tar": "^6.1.2",
-    "tempy": "^1.0.1",
+    "tempy": "^3.0.0",
     "uuid": "^8.3.2",
     "wrap-ansi": "^5.1.0",
     "yaml": "^1.10.2"
